@@ -1,40 +1,41 @@
-MOVLW b’10000001
+List p=18f4520 
+    #include<p18f4520.inc>
+    CONFIG OSC = INTIO67
+    CONFIG WDT = OFF
+    org 0x00
+    
+MOVLW b'10000001';
 MOVWF 0x00
-MOVLW 0x05
+MOVLW 0x05;
 MOVWF 0x10
 
-CLFR 0x05
+CLRF 0x05
 MOVF 0x00,W
 MOVWF 0x02
-RRNCF 0x00
 
-MOVF 0x00,W
-CPFSEQ 0x02
-GOTO testend
-
+teststart:
 MOVLW b'00000011'
 ANDWF 0x00,W
 CPFSEQ 0x05
   GOTO test2
-MOVLW 0x02
+MOVLW 0x02 ;plus 2
 ADDWF 0x10,F
 GOTO testend
 test2:
   MOVLW b'00000001'
-  ANDWF 0x01,W
+  ANDWF 0x00,W
 CPFSEQ 0x05
   GOTO test3
-MOVLW 0x01
+MOVLW 0x01 ;plus 1
 ADDWF 0x10,F
 GOTO testend
 test3:
-DECF 
+DECF 0x10
 testend:
+RRNCF 0x00
 
+MOVF 0x00,W
+CPFSEQ 0x02
+GOTO teststart
+CLRF 0x02
 end
-  
-
-
-
-  
-
