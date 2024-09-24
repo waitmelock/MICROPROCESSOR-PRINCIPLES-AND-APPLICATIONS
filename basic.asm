@@ -1,0 +1,37 @@
+#INCLUDE <p18f4520.inc>
+	CONFIG OSC = INTIO67
+	CONFIG WDT = OFF 
+	org 0x10 ;PC = 0x10 
+	setup:	
+	LFSR 0, 0x100
+	LFSR 1, 0x116
+	
+	setup1:
+	MOVLW 0x06 ;the number of loop iter
+	MOVWF 0x00
+    
+	MOVLW 0x00;
+	MOVLB 0x1
+	MOVWF 0x00,1
+	MOVLW 0x01;
+	MOVLB 0x1
+	MOVWF 0x16,1
+	
+	
+	
+	start:
+	MOVF INDF1,w
+	ADDWF POSTINC0,w
+	MOVWF INDF0
+	
+	MOVF INDF0,w
+	ADDWF POSTDEC1,w
+	MOVWF INDF1
+	
+	DECFSZ 0x00
+	GOTO start
+	
+	end
+	
+
+
