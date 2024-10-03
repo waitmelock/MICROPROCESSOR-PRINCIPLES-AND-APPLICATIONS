@@ -3,22 +3,21 @@
 	CONFIG WDT = OFF 
 	org 0x00 ;PC = 0x10 	
 	
-MOVLW b'01011111'
+MOVLW 0x5F
 MOVWF TRISA
-;邏輯左移，符號位也會被移位，不考慮符號位元，補0
+;???????????????????????0
 MOVLW b'01111111'
 ANDWF TRISA,F
 RLCF TRISA,F
 
-;算數右移，保留最高位，補最高位元數字
+;??????????????????
 ;find MSB
 MOVLW b'10000000'
 ANDWF TRISA,w
-RLNCF WREG
-;clear LSB	
-BCF TRISA,0
-ADDWF TRISA,F	
 RRNCF TRISA
+
+BCF TRISA,7 ;clear new MSB	
+ADDWF TRISA,F	
 	
 end
 	
