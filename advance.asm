@@ -1,0 +1,60 @@
+;0x10-0x13 xh,xl,yh,yl
+;0x00-0x05 variable
+;0x06 first sign 
+;0x07 second sign 
+;0x08 after mul
+;sub_mul macro xh,xl,yh,yl
+
+negtive macro a2,b3
+CLRF 0x06
+CLRF 0x07
+BTFSS a2,7
+GOTO pos2
+  MOVLW b'11111111'
+  XORWF a2,F
+  INCF a2
+  MOVLW 0x01
+  MOVWF 0x06
+pos2:
+BTFSS b3,7
+GOTO posend
+  MOVLW b'11111111'
+  XORWF b3,F
+  INCF b3
+  MOVLW 0x01
+  MOVWF 0x07
+posend:
+MOVF 0x06
+XORWF 0x07,w
+MOVWF 0x08
+endm
+
+cross:
+negtive 0x01,0x05
+MOVF 0x01,w
+MULWF 0x05
+MOVFF PRODL,0x11
+BSF 0x11,7,0
+MOVF 0x08
+ADDWF 0x11,F
+
+
+
+
+
+setup:
+MOVLW 0x0B;
+MOVWF 0x00;a1
+MOVLW 0x00;
+MOVWF 0x01;a2
+MOVLW 0x10;
+MOVWF 0x02;a3
+MOVLW 0x0C;
+MOVWF 0x03;b1
+MOVLW 0x00;
+MOVWF 0x04;b2
+MOVLW 0x06;
+MOVWF 0x05;b3
+
+program:
+rcall cross
