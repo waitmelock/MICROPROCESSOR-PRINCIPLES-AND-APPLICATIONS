@@ -6,7 +6,7 @@
 ;0x05 F0
 ;0x06 F1
 setup:
-MOVLW 0x09;
+MOVLW 0x18;
 MOVWF 0x10
 program:
 MOVLW 0x00
@@ -14,6 +14,22 @@ MOVWF 0x05;F0
 MOVLW 0x01
 MOVWF 0x06;F1
 
+;if==0,1
+MOVLW b'00000000'
+CPFSEQ 0x10
+GOTO start
+GOTO ff
+
+start:
+MOVLW b'00000001'
+CPFSEQ 0x10
+GOTO start2
+MOVFF 0x06,0x01
+GOTO ff
+
+start2:
+    
+    
 MOVFF 0x05,0x12
 MOVFF 0x06,0x14
 DECF 0x10
@@ -32,18 +48,21 @@ GOTO loop
 GOTO final   
     
 fib:
+CLRF 0x15
 MOVF 0x12,w
 ADDWF 0x14,w
 MOVWF 0x16
-BNC upper
+BNC upp
 INCF 0x15
-upper:    
+    
+upp:   
 MOVF 0x11,w
 ADDWF 0x13,w
-ADDWF 0x15
-RETURN
-
+ADDWF 0x15,F
+RETURN   
+    
 final:
 MOVFF 0x15,0x00    
 MOVFF 0x16,0x01
+ff:
 end
