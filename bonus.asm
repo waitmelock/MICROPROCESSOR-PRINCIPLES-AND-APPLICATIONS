@@ -3,8 +3,10 @@ GLOBAL _multi_signed
 PSECT mytext,local,class=CODE,reloc=2
    
 ;TRISA =sign of result
-;TRISB=sign of FSR1L
-;TRISC=sign of FSR2L
+;TRISB=sign of L=LATA
+;TRISC=sign of L=LATC
+;resultL=0x08    
+;resultH=0x09
 neg macro a3,sign
     MOVLW 0xFF;if negtive
     XORWF a3,F
@@ -13,26 +15,27 @@ neg macro a3,sign
     MOVWF sign
 endm 
     
-neg_unsign macro a3,sign
+neg_unsign macro a3
     MOVLW 0xFF;if negtive
     XORWF a3,F
     INCF a3
-    MOVLW 0x80
-    MOVWF sign
+ 
 endm 
     
 _multi_signed:
-MOVFF WREG,FSR1L
-MOVFF 0x01,FSR2L
-CLRF TRISB
-CLRF TRISC
-BTFSS FSR2L,7;4 bits
-GOTO sign
-neg FSR2L,TRISC
+MOVFF WREG,LATA
+MOVFF 0x01,LATC
 
-BTFSS FSR1L,7
+CLRF TRISC
+CLRF TRISB
+    
+BTFSS LATC,7;4 bits
 GOTO sign
-neg FSR1L,TRISB
+neg LATC,TRISC
+
+BTFSS LATA,7
+GOTO sign
+neg LATA,TRISB
 
 
     
@@ -40,30 +43,33 @@ sign:
 MOVF TRISC,w
 XORWF TRISB,w
 MOVWF TRISA  
-
-MOVLW 0x01    
-MOVWF 0x00;mask
 MOVLW 0x00
 MOVWF 0x10;function i
 
 ;mul
-CLRF FSR0H
-MOVFF FSR1L,0x11;low bits
+CLRF 0x09
+MOVFF LATA,0x11;low bits
 function:
-RRNCF FSR2L 
-BTFSS FSR2L,0
+RRNCF LATC 
+BTFSS LATC,0
 GOTO noadd
 MOVF 0x011,w
-ADDWF FSR0L,F
+ADDWF 0x08,F
 MOVFF 0x11,0x12
 MOVFF 0x10,0x13
 
-DECFSZ 0x13
+loop:
+MOVLW 0x00
+CPFSGT 0x13
+GOTO loopend
 RRNCF 0x12
-
+DECF 0x13
+GOTO loop    
+    
+loopend:
 MOVF 0x12,w
-SUBWF FSR1L,w
-ADDWF FSR0H
+SUBWF LATA,w
+ADDWF 0x09
     
 noadd:
 BCF 0x11,7    
@@ -73,9 +79,19 @@ MOVLW 0x03
 CPFSEQ 0x10
 GOTO function
 
+MOVLW 0x80
+CPFSEQ TRISA
+GOTO store
     
+MOVLW 0xFF;if negtive
+XORWF 0x09,w
+MOVFF WREG,0x09
+neg_unsign 0x08
+BNC store
+INCF 0x09
     
-MOVFF FSR0L,0x01
-MOVFF FSR0H,0x02
+store:    
+MOVFF 0x08,0x01
+MOVFF 0x09,0x02
     
 RETURN
