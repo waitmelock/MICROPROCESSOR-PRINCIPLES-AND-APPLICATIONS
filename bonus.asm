@@ -50,36 +50,37 @@ MOVWF 0x10;function i start with 0
 CLRF 0x09
 MOVFF LATA,0x11;cal low bits
 function:
-RRNCF LATC 
 BTFSS LATC,0
 GOTO noadd
 MOVF 0x011,w
-ADDWF 0x08,F
+ADDWF 0x08,F;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 BNC nocarry
 INCF 0x09
 nocarry:
+MOVF 0x12,w
+ADDWF 0x09,F
 MOVFF LATA,0x12
-MOVLW 0x08
-MOVWF LATE
+MOVLW 0x07
+MOVWF 0x14 
 MOVF 0x10,w
-SUBWF LATE,W
+SUBWF 0x14,W
 MOVWF 0x13
 
 loop:
 MOVLW 0x00
 CPFSGT 0x13
 GOTO loopend
+BCF 0x12,0    
 RRNCF 0x12
 DECF 0x13
-GOTO loop    
-ADDWF 0x09
-    
+GOTO loop      
 loopend:;????
 
 noadd:
 BCF 0x11,7    
 RLNCF 0x11    
 INCF 0x10
+RRNCF LATC
 MOVLW 0x03
 CPFSEQ 0x10
 GOTO function
