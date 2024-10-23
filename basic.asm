@@ -9,10 +9,15 @@ _mysqrt:
     MOVF 0x000,w
     MULWF 0x000
     
-    MOVFF PRODL,WREG
-    CPFSLT 0x010 ;skip of 0x10<WREG
-    GOTO loop 
-   
+    MOVLW 0x00
+    CPFSEQ PRODH
+    GOTO loopend
+    MOVFF 0x010,WREG
+    CPFSLT PRODL ;skip of 0x10<WREG
+    GOTO loopend
+    GOTO loop
+    
+    loopend:
     MOVFF 0x000,WREG
     
     RETURN
