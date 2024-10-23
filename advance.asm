@@ -56,9 +56,6 @@ _gcd:
     DIV:
     MOVF 0x20,w
     SUBWF 0x10,F ;1-2
-    ;if high equal 
-    MOVF 0x21,w
-    CPFSEQ 0x11
     rcall checkcarry
     
     ;check if 1>2 GOTO DIV
@@ -75,6 +72,7 @@ _gcd:
     GOTO DIV
     DIVend:
     RETURN
+
    
     
     checkcarry:
