@@ -44,19 +44,26 @@ MOVF TRISC,w
 XORWF TRISB,w
 MOVWF TRISA  
 MOVLW 0x00
-MOVWF 0x10;function i
+MOVWF 0x10;function i start with 0
 
 ;mul
 CLRF 0x09
-MOVFF LATA,0x11;low bits
+MOVFF LATA,0x11;cal low bits
 function:
 RRNCF LATC 
 BTFSS LATC,0
 GOTO noadd
 MOVF 0x011,w
 ADDWF 0x08,F
-MOVFF 0x11,0x12
-MOVFF 0x10,0x13
+BNC nocarry
+INCF 0x09
+nocarry:
+MOVFF LATA,0x12
+MOVLW 0x08
+MOVWF LATE
+MOVF 0x10,w
+SUBWF LATE,W
+MOVWF 0x13
 
 loop:
 MOVLW 0x00
@@ -65,12 +72,10 @@ GOTO loopend
 RRNCF 0x12
 DECF 0x13
 GOTO loop    
-    
-loopend:
-MOVF 0x12,w
-SUBWF LATA,w
 ADDWF 0x09
     
+loopend:;????
+
 noadd:
 BCF 0x11,7    
 RLNCF 0x11    
@@ -79,11 +84,11 @@ MOVLW 0x03
 CPFSEQ 0x10
 GOTO function
 
-MOVLW 0x80
+MOVLW 0x80 ;b'10000000'
 CPFSEQ TRISA
 GOTO store
-    
-MOVLW 0xFF;if negtive
+;if negtive    
+MOVLW 0xFF
 XORWF 0x09,w
 MOVFF WREG,0x09
 neg_unsign 0x08
@@ -91,7 +96,8 @@ BNC store
 INCF 0x09
     
 store:    
-MOVFF 0x08,0x01
-MOVFF 0x09,0x02
-    
+MOVFF 0x08,0x01;0x08 low byte
+MOVFF 0x09,0x02;0x09 high byte
+
+
 RETURN
