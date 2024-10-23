@@ -53,14 +53,12 @@ function:
 BTFSS LATC,0
 GOTO noadd
 MOVF 0x011,w
-ADDWF 0x08,F;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+ADDWF 0x08,F;low
 BNC nocarry
 INCF 0x09
 nocarry:
-MOVF 0x12,w
-ADDWF 0x09,F
 MOVFF LATA,0x12
-MOVLW 0x07
+MOVLW 0x08
 MOVWF 0x14 
 MOVF 0x10,w
 SUBWF 0x14,W
@@ -75,13 +73,15 @@ RRNCF 0x12
 DECF 0x13
 GOTO loop      
 loopend:;????
-
+MOVF 0x12,w
+ADDWF 0x09,F
+    
 noadd:
 BCF 0x11,7    
 RLNCF 0x11    
 INCF 0x10
 RRNCF LATC
-MOVLW 0x03
+MOVLW 0x04
 CPFSEQ 0x10
 GOTO function
 
