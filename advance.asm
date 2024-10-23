@@ -3,75 +3,82 @@ GLOBAL _gcd
 PSECT mytext,local,class=CODE,reloc=2
     
 _gcd:
-    MOVFF 0x001,FSR1L
-    MOVFF 0x002,FSR1H
-    MOVFF 0x003,FSR2L
-    MOVFF 0x004,FSR2H
+    MOVFF 0x001,0x10
+    MOVFF 0x002,0x11
+    MOVFF 0x003,0x20
+    MOVFF 0x004,0x21
     
-    MOVF FSR1H,w
-    CPFSLT FSR2H;if 2<1 skip
+    ;make sure NO1>NO2
+    MOVF 0x11,w
+    CPFSEQ 0x21;if 2<1 skip
+    GOTO compare
+    MOVF 0x10,w
+    CPFSGT 0x20;if B2>B1 skip
+    GOTO function
     GOTO exchange
-    MOVF FSR1H,w
-    CPFSGT FSR2H;if 2>1 skip
+    compare:
+    MOVF 0x11,w
+    CPFSLT 0x21;if 2<1 skip
+    GOTO exchange
+    MOVF 0x11,w
+    CPFSGT 0x21;if 2>1 skip
     GOTO function
-    MOVF FSR1L,w
-    CPFSGT FSR2L;if 2>1 skip
-    GOTO function
+    
     
     exchange:
-    MOVFF 0x003,FSR1L
-    MOVFF 0x004,FSR1H
-    MOVFF 0x001,FSR2L
-    MOVFF 0x002,FSR2H
+    MOVFF 0x003,0x10
+    MOVFF 0x004,0x11
+    MOVFF 0x001,0x20
+    MOVFF 0x002,0x21
     
     function:
     rcall DIV
     exchangeab: ;a=b,b=a%b
-    MOVFF FSR1L,0x003
-    MOVFF FSR2L,FSR1L
-    MOVFF 0x003,FSR2L
-    MOVFF FSR1H,0x003
-    MOVFF FSR2H,FSR1H
-    MOVFF 0x003,FSR2H
-    ; check FSR2==0
+    MOVFF 0x10,0x003
+    MOVFF 0x20,0x10
+    MOVFF 0x003,0x20
+    MOVFF 0x11,0x003
+    MOVFF 0x21,0x11
+    MOVFF 0x003,0x21
+    ; check NO2==0
     MOVLW 0x00
-    CPFSEQ FSR2H;
+    CPFSEQ 0x21;
     GOTO function
     MOVLW 0x00
-    CPFSEQ FSR2L;
+    CPFSEQ 0x20;
     GOTO function
     GOTO functionend
     functionend:
-    MOVFF FSR1L,0x001
-    MOVFF FSR1H,0x002
+    MOVFF 0x10,0x001
+    MOVFF 0x11,0x002
     RETURN
     
     DIV:
-    MOVF FSR2L,w
-    SUBWF FSR1L,F ;1-2
+    MOVF 0x20,w
+    SUBWF 0x10,F ;1-2
     ;if high equal 
-    MOVF FSR2H,w
-    CPFSEQ FSR1H
+    MOVF 0x21,w
+    CPFSEQ 0x11
     rcall checkcarry
     ;check if 1>2 GOTO DIV
-    MOVF FSR2H,w
-    CPFSEQ FSR1H;
+    MOVF 0x21,w
+    CPFSEQ 0x11;
     GOTO checkH
-    MOVF FSR2L,w
-    CPFSLT FSR1L 
+    MOVF 0x20,w
+    CPFSLT 0x10 
     GOTO DIV
     GOTO DIVend
     checkH:
-    MOVF FSR2H,w
-    CPFSLT FSR1H;
+    MOVF 0x21,w
+    CPFSLT 0x11;
     GOTO DIV
     DIVend:
     RETURN
     
     checkcarry:
     BC noneg
-    DECF FSR1H
+    DECF 0x11
     noneg:
-    MOVF FSR2H,w
-    SUBWF FSR1H,F ;1-2
+    MOVF 0x21,w
+    SUBWF 0x11,F ;1-2
     RETURN
