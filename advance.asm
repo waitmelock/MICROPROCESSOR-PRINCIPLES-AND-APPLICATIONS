@@ -60,6 +60,7 @@ _gcd:
     MOVF 0x21,w
     CPFSEQ 0x11
     rcall checkcarry
+    
     ;check if 1>2 GOTO DIV
     MOVF 0x21,w
     CPFSEQ 0x11;
@@ -74,6 +75,7 @@ _gcd:
     GOTO DIV
     DIVend:
     RETURN
+   
     
     checkcarry:
     BC noneg
