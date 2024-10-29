@@ -92,20 +92,27 @@ int:
     
 start: 
 ; Button check
+    CLRF LATA
     BTFSC PORTB, 0      ; Check if PORTB bit 0 is low (button pressed)
     BRA start   ; If button is not pressed, branch back to check_process
 state1:    
     CLRF LATA 
     BTG LATA, 0         ; Toggle RA0 state (change LED state)
-   DELAY05 d'127', d'195' ; Call delay macro to delay for about 0.25 seconds
-    
+    DELAY05 d'127', d'195' ; Call delay macro to delay for about 0.25 seconds
+    BTFSS PORTB, 0      ; Check if PORTB bit 0 is low (button pressed)
+    BRA state2   ; If button is not pressed, branch back to check_process
+     
     CLRF LATA 
     BTG LATA, 1         ; Toggle RA0 state (change LED state)
     DELAY05 d'127', d'195' ; Call delay macro to delay for about 0.25 seconds
-     
+    BTFSS PORTB, 0      ; Check if PORTB bit 0 is low (button pressed)
+    BRA state2   ; If button is not pressed, branch back to check_process
+    
     CLRF LATA 
     BTG LATA, 2         ; Toggle RA0 state (change LED state)
     DELAY05 d'127', d'195' ; Call delay macro to delay for about 0.25 seconds
+    BTFSS PORTB, 0      ; Check if PORTB bit 0 is low (button pressed)
+    BRA state2   ; If button is not pressed, branch back to check_process
     
     BTFSC PORTB, 0      ; Check if PORTB bit 0 is low (button pressed)
     BRA state1   ; If button is not pressed, branch back to check_process
@@ -113,20 +120,47 @@ state1:
 state2:
     BTFSC PORTB, 0      ; Check if PORTB bit 0 is low (button pressed)
     BRA state2   ; If button is not pressed, branch back to check_process
-    
+loop2:    
     CLRF LATA 
     BTG LATA, 0         ; Toggle RA0 state (change LED state)
     DELAY10 d'111', d'249'  ; Call delay macro to delay for about 0.25 seconds
+    BTFSS PORTB, 0      ; Check if PORTB bit 0 is low (button pressed)
+    BRA start   ; If button is not pressed, branch back to check_process
     
-    CLRF LATA 
     BTG LATA, 1         ; Toggle RA0 state (change LED state)
     DELAY10 d'111', d'249'  ; Call delay macro to delay for about 0.25 seconds
-     
+    BTFSS PORTB, 0      ; Check if PORTB bit 0 is low (button pressed)
+    BRA start   ; If button is not pressed, branch back to check_process
+    
     CLRF LATA 
     BTG LATA, 2         ; Toggle RA0 state (change LED state)
-    DELAY10 d'111', d'249' ; Call delay macro to delay for about 0.25 seconds
-    BTFSS PORTB, 0      ; Check if PORTB bit 0 is high (button pressed)
-    BRA state2   ; If button ispressed, branch back to state1
+    DELAY05 d'127', d'195'
+    BTFSS PORTB, 0      ; Check if PORTB bit 0 is low (button pressed)
+    BRA start   ; If button is not pressed, branch back to check_process
+    
+    BTG LATA, 2         ; Toggle RA0 state (change LED state)
+    DELAY05 d'127', d'195'
+    BTFSS PORTB, 0      ; Check if PORTB bit 0 is low (button pressed)
+    BRA start   ; If button is not pressed, branch back to check_process
+    
+    BTG LATA, 2
+    DELAY05 d'127', d'195'
+    BTFSS PORTB, 0      ; Check if PORTB bit 0 is low (button pressed)
+    BRA start   ; If button is not pressed, branch back to check_processv
+    
+    BTG LATA, 2
+    DELAY05 d'127', d'195'
+    BTFSS PORTB, 0      ; Check if PORTB bit 0 is low (button pressed)
+    BRA start   ; If button is not pressed, branch back to check_process
+    
+    BTG LATA, 2
+    DELAY05 d'127', d'195'
+    
+    BTFSS PORTB, 0      ; Check if PORTB bit 0 is low (button pressed)
+    BRA start   ; If button is not pressed, branch back to check_process
+    
+    BRA loop2
+
 end
 
 
