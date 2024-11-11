@@ -3,8 +3,8 @@ GLOBAL _multi_signed
 PSECT mytext,local,class=CODE,reloc=2
    
 ;TRISA =sign of result
-;TRISB=sign of L=LATA
-;TRISC=sign of L=LATC
+;TRISB=sign of L=0x15
+;TRISC=sign of L=0x16
 ;resultL=0x08    
 ;resultH=0x09
 neg macro a3,sign
@@ -23,21 +23,36 @@ neg_unsign macro a3
 endm 
     
 _multi_signed:
-MOVFF WREG,LATA
-MOVFF 0x01,LATC
+MOVFF WREG,0x15;100=10011100
+MOVFF 0x001,0x16
 
 CLRF TRISC
-CLRF TRISB
+CLRF TRISB    
+         
     
-BTFSS LATC,7;4 bits
+MOVLW 0x80
+CPFSEQ 0x15
+GOTO not801
+MOVLW 0x80
+MOVWF TRISB 
+GOTO not8016
+not801:      
+BTFSS 0x15,7
 GOTO sign
-neg LATC,TRISC
+neg 0x15,TRISB
 
-BTFSS LATA,7
+not8016:
+MOVLW 0x80
+CPFSEQ 0x16
+GOTO not802
+MOVLW 0x80
+MOVWF TRISC
+GOTO not80end
+not802:
+BTFSS 0x16,7;4 bits
 GOTO sign
-neg LATA,TRISB
-
-
+neg 0x16,TRISC
+not80end:
     
 sign:
 MOVF TRISC,w
@@ -48,16 +63,16 @@ MOVWF 0x10;function i start with 0
 
 ;mul
 CLRF 0x09
-MOVFF LATA,0x11;cal low bits
+MOVFF 0x15,0x11;cal low bits
 function:
-BTFSS LATC,0
+BTFSS 0x16,0
 GOTO noadd
 MOVF 0x011,w
 ADDWF 0x08,F;low
 BNC nocarry
 INCF 0x09
 nocarry:
-MOVFF LATA,0x12
+MOVFF 0x15,0x12
 MOVLW 0x08
 MOVWF 0x14 
 MOVF 0x10,w
@@ -66,7 +81,7 @@ MOVWF 0x13
 
 loop:
 MOVLW 0x00
-CPFSGT 0x13
+CPFSGT 0x13 
 GOTO loopend
 BCF 0x12,0    
 RRNCF 0x12
@@ -80,7 +95,7 @@ noadd:
 BCF 0x11,7    
 RLNCF 0x11    
 INCF 0x10
-RRNCF LATC
+RRNCF 0x16
 MOVLW 0x04
 CPFSEQ 0x10
 GOTO function
