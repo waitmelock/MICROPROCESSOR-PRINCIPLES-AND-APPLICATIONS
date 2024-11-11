@@ -1,4 +1,4 @@
-;ADVANCE;0x10-0x13 xh,xl,yh,yl
+;0x10-0x13 xh,xl,yh,yl
 ;0x14-0x19
 ;0x00-0x05 variable
 ;0x06 first sign 
@@ -10,7 +10,7 @@
 	CONFIG WDT = OFF 
 	org 0x00 ;PC = 0x10     
 	
-; 二的補數表示法 算sign 
+; ??????? ?sign 
 neg macro a3,sign
     MOVLW b'11111111';if negtive
     XORWF a3,F
@@ -40,17 +40,17 @@ var macro a1,b1,a2,b2
 
     
 setup:
-MOVLW 0x03;
+MOVLW 0x01;
 MOVWF 0x14;a1
-MOVLW 0x04;
+MOVLW 0x03;
 MOVWF 0x15;a2
-MOVLW 0x05;
-MOVWF 0x16;a3
 MOVLW 0x06;
+MOVWF 0x16;a3
+MOVLW 0x02;
 MOVWF 0x17;b1
-MOVLW 0x07;
+MOVLW 0x03;
 MOVWF 0x18;b2
-MOVLW 0x08;
+MOVLW 0x05;
 MOVWF 0x19;b3
 
 program:
@@ -72,7 +72,7 @@ cross:
 ; first set
 CLRF 0x06
 CLRF 0x07
-BTFSS 0x02,7
+BTFSS 0x02,7 ;if <0 do neg
 GOTO pos1
   neg 0x02,0x06
 pos1:
@@ -119,8 +119,6 @@ neg_nosign 0x13
 MOVF 0x11,w
 ADDWF 0x13,w
 MOVWF 0x30
-    
-
   
 RETURN
 final:
