@@ -40,17 +40,17 @@ var macro a1,b1,a2,b2
 
     
 setup:
-MOVLW 0x01;
+MOVLW 0x0B;
 MOVWF 0x14;a1
-MOVLW 0x03;
+MOVLW 0x00;
 MOVWF 0x15;a2
-MOVLW 0x06;
+MOVLW 0x10;
 MOVWF 0x16;a3
-MOVLW 0x02;
+MOVLW 0x0C;
 MOVWF 0x17;b1
-MOVLW 0x03;
+MOVLW 0x00;
 MOVWF 0x18;b2
-MOVLW 0x05;
+MOVLW 0x06;
 MOVWF 0x19;b3
 
 program:
@@ -85,11 +85,22 @@ pos2:
 MOVFF PRODH,0x10
 MOVFF PRODL,0x11
   
-BTFSS 0x10,7
+CLRF 0x31
+MOVLW 0x01  
+CPFSEQ 0x08
 GOTO posend
-  MOVLW b'10000000'
-  ADDWF 0x11,F
-  neg 0x11,0x08
+MOVLW b'11111111';if negtive
+XORWF 0x11,F
+INCF 0x11
+BNC upupno
+MOVLW 0x01  
+MOVWF 0x31
+upupno:
+MOVLW b'11111111';if negtive
+XORWF 0x10,F
+MOVF 0x31,w
+ADDWF 0x10,F
+   
 posend:
     
 ;second set
@@ -108,19 +119,32 @@ pos22:
 MOVFF PRODH,0x12
 MOVFF PRODL,0x13
   
-BTFSS 0x12,7
+CLRF 0x31  
+MOVLW 0x00  
+CPFSEQ 0x09
 GOTO posend2
-  MOVLW b'10000000'
-  ADDWF 0x13,F
-  neg 0x13,0x09
+MOVLW b'11111111';if negtive
+XORWF 0x13,F
+INCF 0x13
+BNC upupno1
+MOVLW 0x01  
+MOVWF 0x31
+upupno1:
+MOVLW b'11111111';if negtive
+XORWF 0x12,F
+MOVF 0x31,w
+ADDWF 0x12,F   
 posend2:  
+    
 
-neg_nosign 0x13
 MOVF 0x11,w
 ADDWF 0x13,w
 MOVWF 0x30
   
+crossend:
 RETURN
 final:
     
 end
+
+
