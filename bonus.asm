@@ -1,35 +1,46 @@
+#INCLUDE <p18f4520.inc>
+	CONFIG OSC = INTIO67
+	CONFIG WDT = OFF 
+	org 0x00 ;PC = 0x10 	
+
 LFSR 0, 0x000
 setup:
-MOVLW 0x28
+MOVLW 0x00
 MOVWF 0x00
-MOVLW 0x34
+MOVLW 0x11
 MOVWF 0x01
-MOVLW 0x7A
+MOVLW 0x22
 MOVWF 0x02
-MOVLW 0x80
+MOVLW 0x33
 MOVWF 0x03
-MOVLW 0xA7
+MOVLW 0x44
 MOVWF 0x04
-MOVLW 0xD1
+MOVLW 0x55
 MOVWF 0x05
-MOVLW 0xFE
+MOVLW 0x66
 MOVWF 0x06
 
 MOVLW 0x00
-MOVWF 0x08 ;left
-MOVLW 0x06 
-MOVWF 0x09 ;n
-MOVLW 0xFE ;
+MOVWF 0x08 ;l
+MOVLW 0x06
+MOVWF 0x09 ;len-1,current len =6
+MOVLW 0x33 ;
 MOVWF 0x12 ;target
 ; 0x10=mid
 ; 0x11 = return outcome
 
 
-while:
+whileloop:
 ;int mid=l+(r-l)/2
 MOVFF 0x08,0x10; store l to mid
 MOVF 0x08,w
 SUBWF 0x09,w
+MOVWF 0x13
+MOVLW b'11111110'
+;?2
+ANDWF 0x13,F
+RRNCF 0x13
+MOVF 0x13,w
 ADDWF 0x10,F
 
 ;if ==
@@ -44,23 +55,23 @@ GOTO BSend
 
 if2:
 MOVF 0x10,w
-MOVF PLUSW0,w
-CPFSGT 0x12
-GOTO else
-MOVFF 0x10,0x09
-DECF 0x09
-GOTO judge
-
-else:
+MOVF PLUSW0,w ;arr[mid]
+CPFSGT 0x12 ;if target > arr[mid] skip else1
+GOTO else1
 MOVFF 0x10,0x08
 INCF 0x08
+GOTO judge
 
+else1:
+MOVFF 0x10,0x09
+DECF 0x09
+    
 judge:
-MOVF 0x08,w
-CPFSGT 0x09
-GOTO while
+MOVF 0x09,w ;right
+CPFSGT 0x08 ;left, if left>right skip GOTO
+GOTO whileloop
 
-return-1:
+return1:
 MOVLW 0x00
 MOVWF 0x11
 GOTO BSend
@@ -68,5 +79,9 @@ GOTO BSend
 
 
 BSend:
-
+CLRF 0x08
+CLRF 0x09
+CLRF 0x10
+CLRF 0x12
+CLRF 0x13
 end
