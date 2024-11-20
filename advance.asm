@@ -55,10 +55,7 @@
 ; CONFIG7H
   CONFIG  EBTRB = OFF           ; Boot Block Table Read Protection bit (Boot block (000000-0007FFh) not protected from table reads executed in other blocks)
 
-    L1 EQU 0x14
-    L2 EQU 0x15
-    state EQU 0x16
-    count EQU 0x17 
+    count EQU 0x14
     org 0x00
   
 goto Initial	
@@ -66,54 +63,55 @@ goto Initial
 ISR:				
     org 0x08			
     BCF PIR1, TMR2IF        ; 離開前記得把TMR2IF清空 (清空flag bit)
-    INCF state
+    ;INCF state
 
-    MOVLW 0x03
-    CPFSEQ state
-    GOTO judge
+	MOVLW 0x00
+	CPFSEQ count
+	GOTO judge0
+	GOTO s0
+judge0:
+	MOVLW 0x0F
+    	CPFSGT count
+	GOTO judge1
+	GOTO s16
+
+	judge1:
+    MOVLW 0x07
+    CPFSGT count
+    GOTO judge2
     GOTO s3
-    judge:
-      MOVLW 0x01
-      CPFSEQ state
+    judge2:
+      MOVLW 0x03
+      CPFSGT count
       GOTO s2
-    
+
+    s0:
+	CLRF LATA
+	INCF count
+	GOTO send
+    s16:
+	CLRF LATA
+	CLRF count
+	GOTO send
     s1:
       MOVLW D'61'		
       MOVWF PR2	
-
-    	CLRF LATA
-    	MOVLW 0x03
-    	MOVWF count
-    	s1loop:
-      	INCF LATA
-      DECFSZ count
-    	GOTO s1loop
-        MOVLW D'122'		
-        MOVWF PR2	
+	INCF LATA
+	INCF count
     	GOTO send
     s2:
-    	MOVLW 0x04
-    	MOVWF count
-      s2loop:
-      	INCF LATA
-    	DECFSZ count
-    	GOTO s2loop
-        MOVLW D'244'		
-        MOVWF PR2	
+	MOVLW D'122'		
+        MOVWF PR2
+    	INCF LATA
+	INCF count
     	GOTO send
     s3:
-      
-    	CLRF state
-    	MOVLW 0x0F
-    	MOVWF count
-    	
-    	s3loop:
-      	INCF LATA
-    	DECFSZ count
-    	GOTO s3loop
+      	MOVLW D'244'		
+        MOVWF PR2
+    	INCF LATA
+	INCF count
     	GOTO send
     send:
-    CLRF LATA
     RETFIE                    ; ??ISR?????????????????GIE??1??????interrupt????
     
     
@@ -129,7 +127,7 @@ Initial:
     BSF PIE1 , TMR2IE
     MOVLW b'11111111'	        ; 將Prescale與Postscale都設為1:16，意思是之後每256個週期才會將TIMER2+1
     MOVWF T2CON		; 而由於TIMER本身會是以系統時脈/4所得到的時脈為主
-    MOVLW D'122'		; 因此每256 * 4 = 1024個cycles才會將TIMER2 + 1
+    MOVLW D'61'		; 因此每256 * 4 = 1024個cycles才會將TIMER2 + 1
     MOVWF PR2			; 若目前時脈為250khz，想要Delay 0.5秒的話，代表每經過125000cycles需要觸發一次Interrupt
 				; 因此PR2應設為 125000 / 1024 = 122.0703125， 約等於122。
     MOVLW D'00100000'
