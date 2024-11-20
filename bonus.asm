@@ -55,66 +55,94 @@
 ; CONFIG7H
   CONFIG  EBTRB = OFF           ; Boot Block Table Read Protection bit (Boot block (000000-0007FFh) not protected from table reads executed in other blocks)
 
-    count EQU 0x14
-    org 0x00
+state1 EQU 0x15
+state2 EQU 0x16
+count EQU 0x14
+reverse EQU 0x17
+tmp EQU 0x18
+ 
+org 0x00
   
 goto Initial	
-
 ISR:				
-    org 0x08			
-    BCF PIR1, TMR2IF        ; 離開前記得把TMR2IF清空 (清空flag bit)
-    ;INCF state
-
-	MOVLW 0x00
-	CPFSEQ count
-	GOTO judge0
-	GOTO s0
-judge0:
+    org 0x08
+    BTFSC INTCON, INT0IF
+    GOTO change
+timer:
+    BCF PIR1, TMR2IF        ; ??????TMR2IF?? (??flag bit)
+    MOVLW 0x00
+    CPFSEQ reverse
+    GOTO t1
+    GOTO t2	
+    t1:	
+	DECFSZ tmp
+	GOTO decA
+	MOVFF count,tmp
 	MOVLW 0x0F
-    	CPFSGT count
+	MOVWF LATA
+	GOTO isrend
+	decA:
+	DECF LATA 
+	GOTO isrend
+    t2: ;no reverse
+	DECFSZ tmp
+	GOTO norset
+	MOVFF count,tmp
+	CLRF LATA   
+	GOTO isrend
+	norset:
+	INCF LATA 
+	GOTO isrend
+change:
+    CLRF LATA
+    BCF INTCON, INT0IF
+    BTG state2,0
+    INCF state1
+    judge0:
+	MOVLW 0x01
+	CPFSEQ state1
+	GOTO judge01    
+	BCF reverse,0
+	MOVLW 0x08
+	MOVWF count
+	MOVWF tmp
 	GOTO judge1
-	GOTO s16
-
-	judge1:
-    MOVLW 0x07
-    CPFSGT count
-    GOTO judge2
-    GOTO s3
-    judge2:
-      MOVLW 0x03
-      CPFSGT count
-      GOTO s2
-
-    s0:
-	CLRF LATA
-	INCF count
-	GOTO send
-    s16:
-	CLRF LATA
-	CLRF count
-	GOTO send
-    s1:
-      MOVLW D'61'		
-      MOVWF PR2	
-	    INCF LATA
-	    INCF count
-    	GOTO send
-    s2:
-    	MOVLW D'122'		
-            MOVWF PR2
-        	INCF LATA
-    	INCF count
-        	GOTO send
-    s3:
-      	MOVLW D'244'		
-        MOVWF PR2
-    	INCF LATA
-	    INCF count
-    	GOTO send
-    send:
+	judge01:
+	    BCF reverse,0
+	    MOVLW 0x02
+	    CPFSEQ state1
+	    GOTO judge02
+	    MOVLW 0x10
+	    MOVWF count
+	    MOVWF tmp
+	    GOTO judge1
+	judge02:
+	    BSF reverse,0
+	    MOVLW 0x10
+	    MOVWF count
+	    MOVWF tmp
+	    GOTO judge1
+    judge1:
+	MOVLW 0x03
+	CPFSLT state1;0 1 2 3 
+	CLRF state1
+	
+	MOVLW 0x01
+	CPFSEQ state2
+	GOTO s1
+	GOTO s2
+	s1:
+	    MOVLW D'61'		
+	    MOVWF PR2	
+	    GOTO isrend	
+	s2:
+	    MOVLW D'122'		
+	    MOVWF PR2
+	    GOTO isrend	
+isrend:      
+     
     RETFIE                    ; ??ISR?????????????????GIE??1??????interrupt????
-    
-    
+     
 Initial:		
     MOVLW 0x0F
     MOVWF ADCON1
@@ -122,17 +150,32 @@ Initial:
     CLRF LATA
     BSF RCON, IPEN
     BSF INTCON, GIE
-    BCF PIR1, TMR2IF		; 為了使用TIMER2，所以要設定好相關的TMR2IF、TMR2IE、TMR2IP。
+    CLRF reverse
+    MOVLW 0x01
+    MOVWF state1
+    CLRF state2
+    MOVLW 0x08
+    MOVWF count
+    MOVWF tmp
+    
+    
+    BCF PIR1, TMR2IF		; ????TIMER2??????????TMR2IF?TMR2IE?TMR2IP?
     BSF IPR1, TMR2IP
     BSF PIE1 , TMR2IE
-    MOVLW b'11111111'	        ; 將Prescale與Postscale都設為1:16，意思是之後每256個週期才會將TIMER2+1
-    MOVWF T2CON		; 而由於TIMER本身會是以系統時脈/4所得到的時脈為主
-    MOVLW D'61'		; 因此每256 * 4 = 1024個cycles才會將TIMER2 + 1
-    MOVWF PR2			; 若目前時脈為250khz，想要Delay 0.5秒的話，代表每經過125000cycles需要觸發一次Interrupt
-				; 因此PR2應設為 125000 / 1024 = 122.0703125， 約等於122。
+    
+    BCF INTCON, INT0IF		; ??Interrupt flag bit??
+    BSF INTCON, INT0IE		; ?interrupt0 enable bit ?? (INT0?RB0 pin?????)
+
+    MOVLW b'11111111'	        ; ?Prescale?Postscale???1:16???????256??????TIMER2+1
+    MOVWF T2CON		; ???TIMER?????????/4????????
+    MOVLW D'61'		; ???256 * 4 = 1024?cycles???TIMER2 + 1
+    MOVWF PR2			; ??????250khz???Delay 0.5?????????125000cycles??????Interrupt
+				; ??PR2??? 125000 / 1024 = 122.0703125? ???122?
     MOVLW D'00100000'
-    MOVWF OSCCON	        ; 記得將系統時脈調整成250kHz
+    MOVWF OSCCON	        ; ??????????250kHz
 
 main:
     bra main
 end
+
+
