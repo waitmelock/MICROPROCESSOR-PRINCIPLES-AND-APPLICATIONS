@@ -17,7 +17,7 @@ void setServoAngle(int angle)
      * = (0x0b*4 + 0b01) * 8µs * 4
      * = 0.00144s ~= 1450µs
      */
-    switch (angle) {
+    switch (angle) { //range is set on motor
         case -90:  // -90° → 500 µs
             CCPR1L = 0x03;
             CCP1CONbits.DC1B = 0b11;
