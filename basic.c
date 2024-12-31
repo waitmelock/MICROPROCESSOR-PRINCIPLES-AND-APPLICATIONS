@@ -17,7 +17,6 @@ void __interrupt(high_priority)H_ISR(){
     int value = ADRESH;
 
     //do things
-    
     switch(value){
         case 4:
             LATB = 0x06; 
@@ -66,25 +65,25 @@ void main(void)
     LATB = 0x00; 
     
     //step1
-    ADCON1bits.VCFG0 = 0;
+    ADCON1bits.VCFG0 = 0; //internal oss
     ADCON1bits.VCFG1 = 0;
-    ADCON1bits.PCFG = 0b1110; //AN0 為analog input,其他則是 digital
+    ADCON1bits.PCFG = 0b1110; //AN0 為analog input,其他則是 digital(查表)
     ADCON0bits.CHS = 0b0000;  //AN0 當作 analog input
-    ADCON2bits.ADCS = 0b000;  //查表後設000(1Mhz < 2.86Mhz)
+    ADCON2bits.ADCS = 0b000;  //查表後設000(1Mhz < 2.86Mhz)(FOSC/2) 
     ADCON2bits.ACQT = 0b001;  //Tad = 2 us acquisition time設2Tad = 4 > 2.4
-    ADCON0bits.ADON = 1;
+    ADCON0bits.ADON = 1;    //AD converter enable
     ADCON2bits.ADFM = 0;    //left justified 
     
     
     //step2
-    PIE1bits.ADIE = 1;
-    PIR1bits.ADIF = 0;
+    PIE1bits.ADIE = 1; //enable AD interrupt
+    PIR1bits.ADIF = 0; //AD interrupt flag bit
     INTCONbits.PEIE = 1;
     INTCONbits.GIE = 1;
 
-
+    //delay at least 2 Tad
     //step3
-    ADCON0bits.GO = 1;
+    ADCON0bits.GO = 1; //can start conversion
     
     while(1);
     
