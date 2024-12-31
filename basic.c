@@ -37,23 +37,31 @@ void setServoAngle(int angle)
 
 void main(void)
 {
-    // Timer2 -> On, prescaler -> 4
-    T2CONbits.TMR2ON = 0b1;
-    T2CONbits.T2CKPS = 0b01;
+    
+    T2CONbits.TMR2ON = 0b1; // Timer2 -> On
+    T2CONbits.T2CKPS = 0b01; //prescaler -> 4
 
     // Internal Oscillator Frequency, Fosc = 125 kHz, Tosc = 8 µs
     OSCCONbits.IRCF = 0b001;
     
     // PWM mode, P1A active-high
-    CCP1CONbits.CCP1M = 0b1100;
+    CCP1CONbits.CCP1M = 0b1100; //P1A B C D active
     
     // CCP1/RC2 -> Output
     TRISC = 0;
     LATC = 0;
-        // Configure PORTB as input for RB0 and enable pull-up resistors
+    
+    // Configure PORTB as input for RB0 and enable pull-up resistors
     TRISB = 0x01;     // RB0 as input
     LATB = 0;
+    
     // Set up PR2, PWM period = 20ms
+    /** 
+     * PWM period
+     * = (PR2 + 1) * 4 * Tosc * (TMR2 prescaler)
+     * = (0x9b + 1) * 4 * 8µs * 4
+     * = 0.019968s ~= 20ms
+     */
     PR2 = 0x9B;
     
     setServoAngle(-90);  // 設定到 -90°
